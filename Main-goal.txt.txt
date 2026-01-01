@@ -1,0 +1,806 @@
+Description
+Objective
+Build a simplified Decentralized Exchange (DEX) using the Automated Market Maker (AMM) model, similar to Uniswap V2. Your DEX will allow users to:
+
+Add liquidity to trading pairs and receive LP (Liquidity Provider) tokens
+Remove liquidity by burning LP tokens
+Swap between two ERC-20 tokens using the constant product formula
+Earn trading fees as a liquidity provider
+By completing this project, you'll understand how modern DeFi protocols enable decentralized trading without order books or centralized intermediaries.
+
+Background
+What is a DEX?
+A Decentralized Exchange (DEX) is a peer-to-peer marketplace where users can trade cryptocurrencies directly without intermediaries like banks or brokerages. Unlike centralized exchanges (Coinbase, Binance), DEXs are:
+
+Non-custodial: Users retain control of their funds
+Permissionless: Anyone can trade or provide liquidity
+Transparent: All transactions are on-chain and auditable
+What is an Automated Market Maker (AMM)?
+Traditional exchanges use order books where buyers and sellers submit orders at specific prices. AMMs replace this with liquidity pools - smart contracts holding reserves of two tokens that anyone can trade against.
+
+How it works:
+
+Liquidity Pools: Instead of matching buy/sell orders, a pool contains reserves of two tokens (e.g., 100 ETH and 200,000 USDC)
+
+The Constant Product Formula: x * y = k
+
+x = reserve of Token A
+y = reserve of Token B
+k = constant (remains the same after each trade, ignoring fees)
+Price Discovery: The ratio of reserves determines the price:
+
+Price of Token A = y / x
+If the pool has 100 ETH and 200,000 USDC, then 1 ETH = 2,000 USDC
+Trading Mechanics: When someone swaps Token A for Token B:
+
+They add Token A to the pool
+The pool calculates how much Token B to give back using the formula
+The ratio changes, updating the price for the next trade
+Example Trade
+Starting pool state:
+
+100 ETH (x)
+200,000 USDC (y)
+k = 100 × 200,000 = 20,000,000
+Alice wants to swap 10 ETH for USDC:
+
+New ETH reserve: 100 + 10 = 110 ETH
+Using k = x × y: 20,000,000 = 110 × y
+New USDC reserve: y = 181,818.18 USDC
+USDC given to Alice: 200,000 - 181,818.18 = 18,181.82 USDC
+Note: This is simplified. In practice, a small fee (0.3%) is taken from each trade and given to liquidity providers.
+
+What are LP Tokens?
+When you provide liquidity to a pool, you receive LP (Liquidity Provider) tokens that represent your share of the pool. These tokens:
+
+Can be redeemed later to withdraw your share of the pool (plus accumulated fees)
+Are ERC-20 tokens themselves
+Proportionally represent your ownership (if you have 10% of LP tokens, you own 10% of the pool)
+Why Provide Liquidity?
+Liquidity providers earn a percentage (typically 0.3%) of every trade made in the pool. This incentivizes people to lock up their tokens and provide liquidity for traders.
+
+Core Requirements
+1. Repository Structure
+Your GitHub repository must follow this exact structure:
+
+dex-amm/
+├── contracts/
+│   ├── DEX.sol
+│   ├── MockERC20.sol
+│   └── (optional: LPToken.sol if separate)
+├── test/
+│   └── DEX.test.js
+├── scripts/
+│   └── deploy.js
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+├── hardhat.config.js
+├── package.json
+└── README.md
+2. Smart Contracts
+File: contracts/DEX.sol
+
+Your DEX contract must implement these exact function signatures:
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract DEX {
+    // State variables (add more as needed)
+    address public tokenA;
+    address public tokenB;
+    uint256 public reserveA;
+    uint256 public reserveB;
+    uint256 public totalLiquidity;
+    mapping(address => uint256) public liquidity;
+    
+    // Events - MUST emit these
+    event LiquidityAdded(address indexed provider, uint256 amountA, uint256 amountB, uint256 liquidityMinted);
+    event LiquidityRemoved(address indexed provider, uint256 amountA, uint256 amountB, uint256 liquidityBurned);
+    event Swap(address indexed trader, address indexed tokenIn, address indexed tokenOut, uint256 amountIn, uint256 amountOut);
+    
+    /// @notice Initialize the DEX with two token addresses
+    /// @param _tokenA Address of first token
+    /// @param _tokenB Address of second token
+    constructor(address _tokenA, address _tokenB) {
+        // Your implementation
+    }
+    
+    /// @notice Add liquidity to the pool
+    /// @param amountA Amount of token A to add
+    /// @param amountB Amount of token B to add
+    /// @return liquidityMinted Amount of LP tokens minted
+    function addLiquidity(uint256 amountA, uint256 amountB) 
+        external 
+        returns (uint256 liquidityMinted) {
+        // Your implementation
+    }
+    
+    /// @notice Remove liquidity from the pool
+    /// @param liquidityAmount Amount of LP tokens to burn
+    /// @return amountA Amount of token A returned
+    /// @return amountB Amount of token B returned
+    function removeLiquidity(uint256 liquidityAmount) 
+        external 
+        returns (uint256 amountA, uint256 amountB) {
+        // Your implementation
+    }
+    
+    /// @notice Swap token A for token B
+    /// @param amountAIn Amount of token A to swap
+    /// @return amountBOut Amount of token B received
+    function swapAForB(uint256 amountAIn) 
+        external 
+        returns (uint256 amountBOut) {
+        // Your implementation
+    }
+    
+    /// @notice Swap token B for token A
+    /// @param amountBIn Amount of token B to swap
+    /// @return amountAOut Amount of token A received
+    function swapBForA(uint256 amountBIn) 
+        external 
+        returns (uint256 amountAOut) {
+        // Your implementation
+    }
+    
+    /// @notice Get current price of token A in terms of token B
+    /// @return price Current price (reserveB / reserveA)
+    function getPrice() external view returns (uint256 price) {
+        // Your implementation
+    }
+    
+    /// @notice Get current reserves
+    /// @return _reserveA Current reserve of token A
+    /// @return _reserveB Current reserve of token B
+    function getReserves() external view returns (uint256 _reserveA, uint256 _reserveB) {
+        // Your implementation
+    }
+    
+    /// @notice Calculate amount of token B received for given amount of token A
+    /// @param amountAIn Amount of token A input
+    /// @return amountBOut Amount of token B output (after 0.3% fee)
+    function getAmountOut(uint256 amountAIn, uint256 reserveIn, uint256 reserveOut) 
+        public 
+        pure 
+        returns (uint256 amountBOut) {
+        // Your implementation - must include 0.3% fee
+    }
+}
+File: contracts/MockERC20.sol
+
+Create a simple ERC-20 token for testing:
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract MockERC20 is ERC20 {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
+        _mint(msg.sender, 1000000 * 10**18); // Mint 1 million tokens
+    }
+    
+    /// @notice Mint tokens for testing
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
+    }
+}
+3. Test Suite
+File: test/DEX.test.js
+
+Your test file must include these specific test cases with exact names:
+
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+
+describe("DEX", function() {
+    let dex, tokenA, tokenB;
+    let owner, addr1, addr2;
+    
+    beforeEach(async function() {
+        // Deploy tokens and DEX before each test
+        [owner, addr1, addr2] = await ethers.getSigners();
+        
+        const MockERC20 = await ethers.getContractFactory("MockERC20");
+        tokenA = await MockERC20.deploy("Token A", "TKA");
+        tokenB = await MockERC20.deploy("Token B", "TKB");
+        
+        const DEX = await ethers.getContractFactory("DEX");
+        dex = await DEX.deploy(tokenA.address, tokenB.address);
+        
+        // Approve DEX to spend tokens
+        await tokenA.approve(dex.address, ethers.utils.parseEther("1000000"));
+        await tokenB.approve(dex.address, ethers.utils.parseEther("1000000"));
+    });
+    
+    describe("Liquidity Management", function() {
+        it("should allow initial liquidity provision", async function() {
+            // Test implementation required
+        });
+        
+        it("should mint correct LP tokens for first provider", async function() {
+            // Test implementation required
+        });
+        
+        it("should allow subsequent liquidity additions", async function() {
+            // Test implementation required
+        });
+        
+        it("should maintain price ratio on liquidity addition", async function() {
+            // Test implementation required
+        });
+        
+        it("should allow partial liquidity removal", async function() {
+            // Test implementation required
+        });
+        
+        it("should return correct token amounts on liquidity removal", async function() {
+            // Test implementation required
+        });
+        
+        it("should revert on zero liquidity addition", async function() {
+            // Test implementation required
+        });
+        
+        it("should revert when removing more liquidity than owned", async function() {
+            // Test implementation required
+        });
+    });
+    
+    describe("Token Swaps", function() {
+        beforeEach(async function() {
+            // Add initial liquidity before swap tests
+            await dex.addLiquidity(
+                ethers.utils.parseEther("100"),
+                ethers.utils.parseEther("200")
+            );
+        });
+        
+        it("should swap token A for token B", async function() {
+            // Test implementation required
+        });
+        
+        it("should swap token B for token A", async function() {
+            // Test implementation required
+        });
+        
+        it("should calculate correct output amount with fee", async function() {
+            // Test implementation required
+        });
+        
+        it("should update reserves after swap", async function() {
+            // Test implementation required
+        });
+        
+        it("should increase k after swap due to fees", async function() {
+            // Test implementation required
+        });
+        
+        it("should revert on zero swap amount", async function() {
+            // Test implementation required
+        });
+        
+        it("should handle large swaps with high price impact", async function() {
+            // Test implementation required
+        });
+        
+        it("should handle multiple consecutive swaps", async function() {
+            // Test implementation required
+        });
+    });
+    
+    describe("Price Calculations", function() {
+        it("should return correct initial price", async function() {
+            // Test implementation required
+        });
+        
+        it("should update price after swaps", async function() {
+            // Test implementation required
+        });
+        
+        it("should handle price queries with zero reserves gracefully", async function() {
+            // Test implementation required
+        });
+    });
+    
+    describe("Fee Distribution", function() {
+        it("should accumulate fees for liquidity providers", async function() {
+            // Test implementation required
+        });
+        
+        it("should distribute fees proportionally to LP share", async function() {
+            // Test implementation required
+        });
+    });
+    
+    describe("Edge Cases", function() {
+        it("should handle very small liquidity amounts", async function() {
+            // Test implementation required
+        });
+        
+        it("should handle very large liquidity amounts", async function() {
+            // Test implementation required
+        });
+        
+        it("should prevent unauthorized access", async function() {
+            // Test implementation required
+        });
+    });
+    
+    describe("Events", function() {
+        it("should emit LiquidityAdded event", async function() {
+            // Test implementation required
+        });
+        
+        it("should emit LiquidityRemoved event", async function() {
+            // Test implementation required
+        });
+        
+        it("should emit Swap event", async function() {
+            // Test implementation required
+        });
+    });
+});
+Test Requirements:
+
+All test cases listed above must be implemented
+Tests must pass when run with npm test
+Use Hardhat's built-in test framework with Chai assertions
+Minimum 25 test cases required
+All edge cases must be covered
+4. Docker Configuration
+File: Dockerfile
+
+FROM node:18-alpine
+
+# Install dependencies for native modules
+RUN apk add --no-cache git python3 make g++
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy project files
+COPY . .
+
+# Compile contracts
+RUN npx hardhat compile
+
+CMD ["npx", "hardhat", "test"]
+File: docker-compose.yml
+
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: dex-amm-evaluation
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+    command: tail -f /dev/null
+File: .dockerignore
+
+node_modules/
+.env
+.git/
+*.log
+coverage/
+cache/
+artifacts/
+typechain-types/
+5. Package Configuration
+File: package.json
+
+Your package.json must include these exact scripts:
+
+{
+  "name": "dex-amm",
+  "version": "1.0.0",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "coverage": "hardhat coverage",
+    "deploy": "hardhat run scripts/deploy.js"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "hardhat": "^2.19.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.0"
+  }
+}
+6. Hardhat Configuration
+File: hardhat.config.js
+
+require("@nomicfoundation/hardhat-toolbox");
+
+module.exports = {
+  solidity: {
+    version: "0.8.19",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
+  networks: {
+    hardhat: {
+      chainId: 31337
+    }
+  }
+};
+7. Documentation
+File: README.md
+
+Your README must include these sections:
+
+# DEX AMM Project
+
+## Overview
+[Brief description of your DEX implementation]
+
+## Features
+- Initial and subsequent liquidity provision
+- Liquidity removal with proportional share calculation
+- Token swaps using constant product formula (x * y = k)
+- 0.3% trading fee for liquidity providers
+- LP token minting and burning
+
+## Architecture
+[Explain your contract structure and key design decisions]
+
+## Mathematical Implementation
+
+### Constant Product Formula
+[Explain how you implemented x * y = k]
+
+### Fee Calculation
+[Explain how 0.3% fee is calculated and distributed]
+
+### LP Token Minting
+[Explain LP token calculation for initial and subsequent liquidity]
+
+## Setup Instructions
+
+### Prerequisites
+- Docker and Docker Compose installed
+- Git
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd dex-amm
+```
+
+2. Start Docker environment:
+```bash
+docker-compose up -d
+```
+
+3. Compile contracts:
+```bash
+docker-compose exec app npm run compile
+```
+
+4. Run tests:
+```bash
+docker-compose exec app npm test
+```
+
+5. Check coverage:
+```bash
+docker-compose exec app npm run coverage
+```
+
+6. Stop Docker:
+```bash
+docker-compose down
+```
+
+## Running Tests Locally (without Docker)
+```bash
+npm install
+npm run compile
+npm test
+```
+
+## Contract Addresses
+[If deployed to testnet, include addresses and block explorer links]
+
+## Known Limitations
+[List any assumptions or limitations in your implementation]
+
+## Security Considerations
+[Explain security measures implemented]
+Implementation Details
+Mathematical Formulas
+1. Initial Liquidity (First Provider):
+
+liquidityMinted = sqrt(amountA * amountB)
+2. Subsequent Liquidity Addition:
+
+The amounts must maintain the current price ratio:
+
+amountB_required = (amountA * reserveB) / reserveA
+LP tokens minted proportionally:
+
+liquidityMinted = (amountA * totalLiquidity) / reserveA
+3. Liquidity Removal:
+
+Withdraw proportional share:
+
+amountA = (liquidityBurned * reserveA) / totalLiquidity
+amountB = (liquidityBurned * reserveB) / totalLiquidity
+4. Token Swaps (with 0.3% fee):
+
+The exact formula for output amount:
+
+amountInWithFee = amountIn * 997
+numerator = amountInWithFee * reserveOut
+denominator = (reserveIn * 1000) + amountInWithFee
+amountOut = numerator / denominator
+This ensures:
+
+0.3% fee is deducted (997/1000 = 99.7% of input is used)
+Fee remains in pool, benefiting LPs
+Constant product k slightly increases with each trade
+Implementation Guidelines
+Liquidity Management:
+
+First liquidity provider can add any ratio
+Subsequent providers must match existing ratio or handle excess
+Use SafeMath or Solidity 0.8+ for overflow protection
+Emit events with all relevant parameters
+Swap Implementation:
+
+Always deduct 0.3% fee from input amount first
+Apply constant product formula with fee-adjusted amount
+Update reserves after swap
+Verify k never decreases (except rounding)
+Emit Swap event with all details
+Security Best Practices:
+
+Use OpenZeppelin's ReentrancyGuard
+Use SafeERC20 for token transfers
+Validate all inputs (non-zero, sufficient balance)
+Check for arithmetic overflow/underflow
+Ensure proper access control
+LP Token Management:
+
+Can be implemented within DEX.sol or as separate contract
+Must be mintable/burnable only by DEX contract
+Track each provider's share accurately
+Handle edge case of first provider
+Common Pitfalls to Avoid
+Integer Division: Solidity truncates. Always multiply before dividing:
+   // Wrong: (a / b) * c
+   // Right: (a * c) / b
+Reserve Synchronization: Always update reserves when tokens move:
+   reserveA += amountA;
+   // NOT: reserveA = tokenA.balanceOf(address(this));
+First LP Edge Case: The first liquidity provider sets initial price. Handle this separately.
+
+Fee Calculation: Apply fee BEFORE using constant product formula, not after.
+
+Event Emission: Emit events AFTER state changes but BEFORE external calls.
+
+Submission Checklist
+Before submitting, verify:
+
+ All required files present in correct structure
+ Contract compiles without errors: docker-compose exec app npm run compile
+ All 25+ tests pass: docker-compose exec app npm test
+ Code coverage ≥ 80%: docker-compose exec app npm run coverage
+ All required function signatures match exactly
+ All required test names match exactly
+ Docker setup works: docker-compose up -d succeeds
+ README includes all required sections
+ NatSpec comments on all public functions
+ Events emit correct parameters
+ No security vulnerabilities (run Slither if available)
+ Git repository is public and accessible
+ .gitignore excludes node_modules/, artifacts/, cache/
+Testing Your Submission
+Run these commands to verify your submission works:
+
+# Clean start
+docker-compose down
+rm -rf node_modules artifacts cache
+
+# Build and test
+docker-compose up -d
+docker-compose exec app npm run compile
+docker-compose exec app npm test
+docker-compose exec app npm run coverage
+
+# Verify output shows all tests passing
+Expected output:
+
+  DEX
+    Liquidity Management
+      ✓ should allow initial liquidity provision
+      ✓ should mint correct LP tokens for first provider
+      ... (25+ tests)
+    
+  25 passing (3s)
+FAQs
+Q: What should happen on the first liquidity provision?
+A: The first liquidity provider:
+
+Can add any amounts of both tokens (sets initial price)
+Receives sqrt(amountA * amountB) LP tokens
+Sets the initial reserveA and reserveB
+Q: How do I handle subsequent liquidity additions?
+A: Option 1 (Simpler): Require exact ratio, revert if not matched
+
+require(amountB == amountA * reserveB / reserveA, "Ratio mismatch");
+Option 2 (Better UX): Accept both amounts, use optimal amount, return excess
+
+Q: How should I implement LP tokens?
+A: Two approaches:
+
+Separate contract: Create LPToken.sol inheriting ERC20, give DEX minting rights
+Integrated: Include LP token logic directly in DEX.sol with mapping
+Both are acceptable. Integrated is simpler.
+
+Q: What does "constant product" mean exactly?
+A: Before a swap: k = reserveA * reserveB After a swap: k_new = reserveA_new * reserveB_new
+
+Due to the 0.3% fee staying in the pool, k_new should be slightly larger than k. This is how LPs earn fees - the pool grows over time.
+
+Q: How do I test fee accumulation?
+A:
+
+// Add liquidity
+// Perform swaps
+// Remove liquidity
+// Verify withdrawn amounts > original deposit
+The difference is accumulated fees.
+
+Q: What happens if someone sends tokens directly to the DEX?
+A: Your reserves track only tokens added through proper functions. Direct transfers won't update reserves, so those tokens are effectively donated to LPs (increases their share when they withdraw).
+
+Q: Should I implement slippage protection?
+A: Not required for basic implementation. Focus on core functionality first. Slippage protection (minAmountOut parameter) is a bonus feature.
+
+Q: How do I run tests without Docker?
+A:
+
+npm install
+npx hardhat compile
+npx hardhat test
+But your submission MUST work with Docker as specified.
+
+Q: My swap calculations are slightly off. Why?
+A: Common causes:
+
+Integer division rounding
+Fee not applied correctly (should be 997/1000 of input)
+Multiplying in wrong order
+Using balances instead of reserves
+Debug with console.log in contracts and compare step-by-step with expected values.
+
+Q: What if I can't achieve 80% code coverage?
+A: Add more tests! Cover:
+
+Happy paths (normal operations)
+Edge cases (zero amounts, first LP, maximum values)
+Error cases (insufficient balance, reverts)
+Different users interacting with the pool
+Sequential operations (add → swap → remove)
+Q: Can I use a different test framework?
+A: No. Must use Hardhat with the specified test structure. The evaluation system expects specific test names and structure.
+
+Q: How do I know if my implementation is correct?
+A: Your implementation is correct if:
+
+All tests pass
+After swaps: reserveA_new * reserveB_new >= reserveA_old * reserveB_old
+After liquidity removal: sum(all LP shares) = totalLiquidity
+LPs profit from trading fees over time
+No funds get stuck in the contract
+Q: Can I add extra features?
+A: Yes, but implement required features first. Bonus features:
+
+Slippage protection (minAmountOut parameter)
+Deadline parameter for time-bound transactions
+View functions for quote calculations
+Multiple trading pairs
+Flash swaps
+Q: What should I do if Docker build fails?
+A: Common fixes:
+
+# Clear Docker cache
+docker-compose down
+docker system prune -a
+
+# Rebuild
+docker-compose build --no-cache
+docker-compose up -d
+If still failing, check:
+
+Docker Desktop is running
+Sufficient disk space
+package.json has correct dependencies
+No syntax errors in Dockerfile
+Q: How long should this project take?
+A: Typical timeline:
+
+Understanding concepts: 2-4 hours
+Basic implementation: 4-8 hours
+Writing tests: 3-6 hours
+Debugging and refinement: 2-4 hours
+Documentation: 1-2 hours
+Total: 12-24 hours for a solid implementation
+
+Don't rush. Understanding the concepts is more valuable than finishing quickly.
+
+Submission Instructions
+Submit a complete GitHub repository containing your DEX implementation. Your repository must include:
+
+Required Files:
+
+All smart contracts in the contracts/ directory (DEX.sol, MockERC20.sol, and optionally LPToken.sol)
+Complete test suite in test/DEX.test.js with all 25+ test cases implemented
+Deployment script in scripts/deploy.js
+Docker configuration files (Dockerfile, docker-compose.yml, .dockerignore)
+Hardhat configuration (hardhat.config.js)
+Package configuration (package.json)
+Comprehensive README.md with all required sections
+Repository Requirements:
+
+Repository must be public and accessible
+All contracts must compile without errors
+All tests must pass when run with npm test
+Code coverage must be ≥ 80% as verified by npm run coverage
+Docker setup must work: docker-compose up -d must succeed
+All required function signatures must match exactly as specified
+All required test names must match exactly as specified
+README must include: Overview, Features, Architecture, Mathematical Implementation, Setup Instructions, Contract Addresses (if deployed), Known Limitations, Security Considerations
+Code Quality:
+
+NatSpec comments on all public functions
+Events must emit correct parameters
+No security vulnerabilities (run Slither if available)
+Proper .gitignore excluding node_modules/, artifacts/, cache/
+Verification: Before submitting, verify your implementation by running:
+
+docker-compose exec app npm run compile (must succeed)
+docker-compose exec app npm test (all 25+ tests must pass)
+docker-compose exec app npm run coverage (coverage ≥ 80%)
+Optional Bonus Features:
+
+Slippage protection (minAmountOut parameter)
+Deadline parameter for time-bound transactions
+View functions for quote calculations
+Multiple trading pairs
+Flash swaps
+Focus on implementing all required features first before adding bonus features.
+
+Evaluation Overview
+Your DEX implementation will be evaluated through multiple methods to assess functionality, code quality, security, and design decisions.
+
+Functional Testing: We will compile your smart contracts and execute your complete test suite. All 25+ test cases must pass, covering liquidity management, token swaps, price calculations, fee distribution, edge cases, and event emissions. We will verify that your implementation correctly handles the constant product formula, LP token minting/burning, and fee accumulation.
+
+Code Quality Review: Your code will be reviewed for organization, modularity, security best practices, and adherence to Solidity conventions. We will assess error handling, input validation, gas optimization techniques, and overall architecture. Documentation quality, including NatSpec comments and README completeness, will be evaluated.
+
+Security Assessment: We will analyze your contracts for common vulnerabilities including reentrancy attacks, integer overflow/underflow, access control issues, and front-running risks. Your implementation of security measures such as ReentrancyGuard and SafeERC20 will be reviewed.
+
+Mathematical Correctness: We will verify that your constant product formula implementation correctly maintains pool invariants, that fees are calculated and distributed properly, and that LP token calculations are mathematically sound for both initial and subsequent liquidity provisions.
+
+Docker Environment: We will test your Docker setup to ensure contracts compile and tests run successfully in the containerized environment. Your docker-compose configuration must work as specified.
+
+Design Decisions: Your questionnaire responses will be evaluated to assess your understanding of DeFi protocols, security considerations, economic modeling, and architectural trade-offs. We will look for thoughtful analysis of alternatives and production considerations.

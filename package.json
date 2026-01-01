@@ -1,0 +1,27 @@
+{
+  "name": "dex-amm",
+  "version": "1.0.0",
+  "description": "Decentralized Exchange using Automated Market Maker (AMM) model",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "coverage": "hardhat coverage",
+    "deploy": "hardhat run scripts/deploy.js"
+  },
+  "keywords": [
+    "dex",
+    "amm",
+    "defi",
+    "ethereum",
+    "solidity"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "hardhat": "^2.19.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.0"
+  }
+}
